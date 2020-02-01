@@ -1,0 +1,13 @@
+import * as admin from 'firebase-admin';
+import * as functions from "firebase-functions";
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: "passfolio-test-daf9c",
+    clientEmail: "firebase-adminsdk-xhf7u@passfolio-test-daf9c.iam.gserviceaccount.com",
+    privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCs9tGUU9FHg5rO\nfG0Zxek8NPvIff3kIMMpl95RVEoT35RGiGZKcjTRf62b91Ch8Aoo56miOW5K52K9\nV3cIjX2xRsh/ecxopuvbmuahKms1n0y594r+J41qLhnMNaYaYxWWLRZc+HU+wkcX\ny/yiYSCYdJBy0iB9YCE7YTPOuergw1mv+NpCNDFRmTgJb9hxfPr4Xxbz8TP9060x\n6TfGVkr6jw7FWqCqpds590z5SV3PO/UIaHrWVnVlGlW2QWFQeNHYnrHxugS/raLM\nnPuq4KbsPZwbgfgBaM1nhcuErD9cbz9g7qytG8SVVjQJT4qehOTduhlpC7ggH7wO\nAaaS7KGZAgMBAAECggEAG1EBI9TiU3y5wUIDal5IX1AwMlI7poDKHH02CPraltg+\nWa6xwQYtHf0f1RGydAYuBJckbPt3AMYZtl+O7BSJ36qXKxLNsVAo0HkJUuDD0nyD\nKJ0AyvJCMkfE8+xxJu+zzrug3DQH3aPfMydDPKiW9kef3JJ1ESKn0kdKtavFKD6k\n0MnJaUqQSO3wLqtfmB8+P5U7SiwW773o6LnDczz0hsL6IuqxG5oAaU8PXhCS4iD1\nxarsDN7DsQtTb8fVW9XNFKcNssWVzztRfR9GDPFdQJep7PPqUp9kqb6k5/EfRiMF\nJQADvGsqctJKrbZ8PxHL8xggBOpo43+/q9f2DdzpxQKBgQDW0yZkpgu6ZymQaai0\ng84yZjtjuWttDvwxfdzJEgGUPT+6ZFzv79cdco/yfMvC1Gq3EFqGnBFdDobNJv4+\nP9KaxM6dLs8HsZNi8Mas3jPCP18mblddkJxR77KfF+c8dTsgjuoKrxsomu26oAxL\nJNQcgDxLZgp1AL7tffLXjrPGkwKBgQDOHa7lXL3yoxUtRvZuug9I0YDInxAoiRmj\nMfuxFs9IS3+i/AyvvcoVNmEpXucP5OYrR5apvmJmDB6p+u3DAAQjeixYScZC6DMM\nLfdr9Hg0wVNe0M+zapkBO0+XeTW3cWxyt0b5fRXmXlzUMxNl2zSYZKVTeQOsp4ls\nX1/6cdNGowKBgH6M7q4V/wy1HxAani6RAtQ/0zahET6yuDAzk+/DMrjwB+22l+Uk\npdWMGm5fw+0nEyJ6eMmZgMUP/Ks4EEf9cwSHcau42m8O1eNQMcm+MEF68YODNuZA\nfUXrbY85FphP+x/n8MmQc/BMrETnabaOoIGVrW9BUmGwqcjgDEGdqBwPAoGALRmJ\nn14/ocvVYmbYnTnRBlnxF/TWEEiPd4oETKd1C5iZgQwtqnaYtTOE5wyA+pVXV7j+\nWn3yAeo8+2yQgc6LGUguU9MwsoskQFH+hXykoMZ8e46tI9D7Ua2sqLQ48L68wA0i\nVozsMdAL99KFOBBS3dWH50/fYfP2uePUmHQ3iokCgYEAguvLfutBnrZ2aOGz9qwe\nr/ZPNS6exi9jXfYEFSfgctspp60IXTKYIg/wB1919X8Nj0lEilHoH//uMOIKjr0g\nLB5hl7xLjR1jApPQXVs0Fzn73ZZYkuxxgz4OktPUxulnY0cv8UXDYWcIcI3ldptK\nVQMbkOtaltS1wo5gpzON8Mg=\n-----END PRIVATE KEY-----\n",
+  }),
+  databaseURL: "https://passfolio-test-daf9c.firebaseio.com",
+});
+
+export default admin;
