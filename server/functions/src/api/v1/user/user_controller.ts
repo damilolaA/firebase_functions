@@ -30,7 +30,7 @@ export const createUser = async (req: Request, res: Response) => {
     newUser.email = email;
     newUser.password = password;
     newUser.hashPassword();
-    
+
     const savedUser = await userRepository.save(newUser);
 
     const { id, email: savedEmail, credit } = savedUser;
@@ -45,7 +45,7 @@ export const createUser = async (req: Request, res: Response) => {
     return res.status(200).send(savedUser);
   } catch (error) {
     console.log('errror', error);
-    if(error && error.message === "ER_DUP_ENTR") {
+    if (error && error.message === "ER_DUP_ENTR") {
       return res.status(422).json({
         code: "error",
         "error": "User with email already exist",
@@ -58,19 +58,19 @@ export const createUser = async (req: Request, res: Response) => {
   }
 }
 
-export const getAllUsers = async(req: Request, res: Response) => {
-  try{
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
     const connection: Connection = await connect();
 
     const userRepository = connection.getRepository(User);
     const users = await userRepository.find({
-      select: ["id", "email", "credit" ],
+      select: ["id", "email", "credit"],
     });
 
     res.status(200).json({
       users: users
     });
-  }catch(error) {
+  } catch (error) {
     console.log('error', error);
     res.status(422).json({
       error: 'error',
@@ -79,65 +79,66 @@ export const getAllUsers = async(req: Request, res: Response) => {
   }
 }
 
-export const getUser = (req: Request, res: Response) => {
-
-  try{
-
-  }catch(error) {
-
-  }
-}
-
-export const sendToDatabase = async(req: Request, res: Response) => {
-  try{
+export const sendToDatabase = async (req: Request, res: Response) => {
+  try {
     const { id } = req.params;
     const { amount, beneficiaryId } = req.body;
 
-    if(amount == null) {
-      return res.status(422).json({
+    if (amount == null) {
+      return res.status(400).json({
         error: "error",
         message: "please provide amount"
       });
     }
-    const connection: Connection = await connect();
 
-    const userRepository = connection.getRepository(User);
-
-    let currentUser;
-    let beneficiary;
-    let balance;
-
-    currentUser = await userRepository.findOneOrFail(id, {
-      select: ["id", "credit"]
-    });
-
-    beneficiary = await userRepository.findOneOrFail(beneficiaryId, {
-      select: ["id", "credit"]
-    });
-    
-    const { credit } = currentUser;
-
-    if(amount > parseFloat(credit)) {
-      return res.status(422).json({
+    if (beneficiaryId == null) {
+      return res.status(400).json({
         error: "error",
-        message: "Insufficient balance"
+        message: "please provide beneficiaryId"
       });
     }
 
-    balance = credit - amount;
-    currentUser.credit = balance;
+    const connection: Connection = await connect();
+    await connection.transaction(async transactionEntityManager => {
+      let balance;
+      let currentUser;
+      let beneficiaryUser;
 
-    const beneficiaryCredit = parseFloat(beneficiary.credit) + parseFloat(amount);
+      const userRepository = transactionEntityManager.getRepository(User);
 
-    beneficiary.credit = beneficiaryCredit;
+      currentUser = await userRepository.findOneOrFail(id, {
+        select: ["id", "credit"]
+      });
 
-    await userRepository.save(beneficiary);
-    await userRepository.save(currentUser);
+      beneficiaryUser = await userRepository.findOneOrFail(beneficiaryId, {
+        select: ["id", "credit"]
+      });
 
-    return res.status(200).json({
-      message: "database transfer successful"
+      const { credit } = currentUser;
+
+      if (amount > parseFloat(credit)) {
+        return res.status(422).json({
+          error: "error",
+          message: "Insufficient balance"
+        });
+      }
+
+      balance = credit - amount;
+
+      currentUser.credit = balance;
+
+      const beneficiaryCredit = parseFloat(beneficiaryUser.credit) + parseFloat(amount);
+      beneficiaryUser.credit = beneficiaryCredit;
+
+      await userRepository.save(currentUser);
+      await userRepository.save(beneficiaryUser);
+
+      return res.status(200).json({
+        message: "database transfer successful"
+      });
     });
-  }catch(error) {
+  } catch (error) {
+    console.log('error', error);
     return res.status(422).json({
       error: "error",
       message: "something went wrong"
@@ -145,12 +146,33 @@ export const sendToDatabase = async(req: Request, res: Response) => {
   }
 }
 
-export const sendToFirebase = async(req: Request, res: Response) => {
-  try{
+export const sendToFirebase = async (req: Request, res: Response) => {
+  try {
     const id = req.params.id;
     const userEmail = req.params.email;
 
     const { amount, beneficiaryId, email } = req.body;
+
+    if (amount == null) {
+      return res.status(400).json({
+        error: "error",
+        message: "please provide amount"
+      });
+    } 
+
+    if (email == null) {
+      return res.status(400).json({
+        error: "error",
+        message: "please provide beneficiary email"
+      });
+    }
+
+    if (beneficiaryId == null) {
+      return res.status(400).json({
+        error: "error",
+        message: "please provide beneficiary id"
+      });
+    }
 
     const userId = `${id}:${userEmail}`;
     const benUserId = `${beneficiaryId}:${email}`;
@@ -171,17 +193,17 @@ export const sendToFirebase = async(req: Request, res: Response) => {
 
       let balance;
 
-      if(amount > parseFloat(credit)) {
+      if (amount > parseFloat(credit)) {
         return res.status(422).json({
           error: "error",
           message: "Insufficient balance"
         });
       }
 
-      balance = credit - amount;
+      balance = parseFloat(credit) - parseFloat(amount);
 
       await transaction.update(userRef, {
-        credit: balance
+        credit: parseFloat(balance)
       });
 
       await transaction.update(benUserRef, {
@@ -192,10 +214,51 @@ export const sendToFirebase = async(req: Request, res: Response) => {
         message: "firestore transfer successful"
       });
     });
-  }catch(error) {
+  } catch (error) {
     return res.status(422).json({
       error: "something went wrong",
       message: "firestore transfer successful"
+    });
+  }
+}
+
+export const getUser = async(req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const connection: Connection = await connect();
+
+    const userRepository = connection.getRepository(User);
+    const user = await userRepository.findOneOrFail(id, {
+      select: ["id", "email", "credit"],
+    });
+
+    if(!user) {
+      return res.status(400).json({
+        error: "error",
+        message: "user not found"
+      });
+    }
+    const { email, credit } = user;
+    const firebaseId = `${id}:${email}`;
+
+    const userDoc = await Firebase.firestore().doc(`users/${firebaseId}`).get();
+    let userData;
+    if(userDoc.exists) {
+      userData = userDoc.data();
+    }
+    
+    const firebasecredit = Math.round(userData.credit).toFixed(3);
+    const resObject = {
+      email,
+      firestore_credits: firebasecredit,
+      database_credits: credit
+    }
+    return res.status(200).json(resObject);
+  } catch (error) {
+    return res.status(422).json({
+      error: "error",
+      message: "something happended"
     });
   }
 }
