@@ -99,7 +99,7 @@ export const sendToDatabase = async (req: Request, res: Response) => {
     }
 
     const connection: Connection = await connect();
-    await connection.transaction(async transactionEntityManager => {
+    await connection.transaction("SERIALIZABLE", async transactionEntityManager => {
       let balance;
       let currentUser;
       let beneficiaryUser;
